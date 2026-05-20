@@ -27,9 +27,15 @@ customer-churn-detection/
 ├── reports/
 │   ├── figures/             # Learning curve, ROC, confusion matrix, etc.
 │   └── metrics/             # JSON metrics and classification report
+├── scripts/
+│   └── setup_env.sh          # Create .venv and install requirements
+├── static/                   # Flask UI styles
+├── templates/                # Flask UI templates
 ├── src/churn_detection/
 │   ├── data.py
+│   ├── features.py
 │   └── plots.py
+├── app.py                    # Flask prediction app
 ├── requirements.txt
 └── train.py
 ```
@@ -38,6 +44,14 @@ customer-churn-detection/
 
 ```bash
 cd /Users/houcine/Desktop/Random/customer-churn-detection
+bash scripts/setup_env.sh
+source .venv/bin/activate
+python train.py
+```
+
+Manual environment setup:
+
+```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -45,6 +59,17 @@ python train.py
 ```
 
 After training, open the generated figures in `reports/figures/` and metrics in `reports/metrics/`.
+
+## Run The Flask App
+
+Train once, then start the web UI:
+
+```bash
+python train.py
+python app.py
+```
+
+Open `http://127.0.0.1:5001` and enter a customer profile to get a churn probability, model decision, and retention suggestions.
 
 ## Optional Kaggle Dataset
 
@@ -73,6 +98,10 @@ The loader looks for target columns such as `Churn`, `churn`, `Exited`, or `Attr
 - `reports/figures/precision_recall_curve.png`: precision-recall curve.
 - `reports/figures/threshold_tradeoff.png`: precision, recall, and F1 by threshold.
 - `reports/figures/feature_importance.png`: strongest model drivers.
+
+## Web App
+
+The Flask UI loads `models/customer_churn_model.joblib`, applies the same feature engineering as training, and scores a single customer profile. The saved model is ignored by git, so run `python train.py` after cloning before launching `python app.py`.
 
 ## Notes
 

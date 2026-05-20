@@ -50,6 +50,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from churn_detection.data import load_or_create_dataset, save_processed_dataset
+from churn_detection.features import add_feature_engineering
 from churn_detection.plots import (
     plot_churn_rate_by_category,
     plot_class_balance,
@@ -141,47 +142,6 @@ def main() -> None:
     print(f"Rows: {len(df):,} | Churn rate: {y.mean():.1%}")
     print(f"Best model: {best_name}")
     print(json.dumps(best_metrics, indent=2))
-
-
-def add_feature_engineering(df: pd.DataFrame, target_column: str) -> pd.DataFrame:
-    """Add simple, explainable churn features when source columns exist."""
-
-    df = df.copy()
-    tenure_column = _first_existing_column(df, ["tenure_months", "tenure"])
-    monthly_column = _first_existing_column(df, ["monthly_charges", "MonthlyCharges", "monthlycharges"])
-    total_column = _first_existing_column(df, ["total_charges", "TotalCharges", "totalcharges"])
-
-    if tenure_column is not None:
-        safe_tenure = df[tenure_column].clip(lower=1)
-        df["is_new_customer"] = (df[tenure_column] <= 6).astype(int)
-        df["is_long_tenure_customer"] = (df[tenure_column] >= 48).astype(int)
-
-        if total_column is not None:
-            df["average_monthly_spend"] = df[total_column] / safe_tenure
-
-        if "support_calls" in df.columns:
-            df["support_calls_per_year"] = df["support_calls"] / (safe_tenure / 12)
-
-        if "late_payments" in df.columns:
-            df["late_payments_per_year"] = df["late_payments"] / (safe_tenure / 12)
-
-    if monthly_column is not None and total_column is not None:
-        df["charge_to_total_ratio"] = df[monthly_column] / df[total_column].clip(lower=1)
-
-    df = df.replace([np.inf, -np.inf], np.nan)
-    return df
-
-
-def _first_existing_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
-    """Find a column by trying exact names and case-insensitive names."""
-
-    lowered = {column.lower(): column for column in df.columns}
-    for candidate in candidates:
-        if candidate in df.columns:
-            return candidate
-        if candidate.lower() in lowered:
-            return lowered[candidate.lower()]
-    return None
 
 
 def build_candidate_models() -> dict[str, object]:

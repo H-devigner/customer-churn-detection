@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Churn Radar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Customer Churn Detection</p>
+            <h1>Churn Radar</h1>
+          </div>
+          <div class="model-pill">Threshold tuned</div>
+        </header>
+
+        <form class="form-grid" method="post">
+          <div class="panel form-panel">
+            <div class="panel-head">
+              <h2>Customer Profile</h2>
+              <span>Account signals</span>
+            </div>
+
+            <div class="fields">
+              <label>
+                Gender
+                <select name="gender">
+                  {% for option in ["Female", "Male"] %}
+                    <option value="{{ option }}" {% if form_values.gender == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Senior Citizen
+                <select name="senior_citizen">
+                  <option value="0" {% if form_values.senior_citizen == 0 %}selected{% endif %}>No</option>
+                  <option value="1" {% if form_values.senior_citizen == 1 %}selected{% endif %}>Yes</option>
+                </select>
+              </label>
+
+              <label>
+                Partner
+                <select name="partner">
+                  {% for option in ["Yes", "No"] %}
+                    <option value="{{ option }}" {% if form_values.partner == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Dependents
+                <select name="dependents">
+                  {% for option in ["Yes", "No"] %}
+                    <option value="{{ option }}" {% if form_values.dependents == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Tenure Months
+                <input name="tenure_months" type="number" min="0" max="120" value="{{ form_values.tenure_months }}">
+              </label>
+
+              <label>
+                Contract
+                <select name="contract">
+                  {% for option in ["Month-to-month", "One year", "Two year"] %}
+                    <option value="{{ option }}" {% if form_values.contract == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Internet Service
+                <select name="internet_service">
+                  {% for option in ["DSL", "Fiber optic", "No"] %}
+                    <option value="{{ option }}" {% if form_values.internet_service == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Online Security
+                <select name="online_security">
+                  {% for option in ["Yes", "No", "No internet service"] %}
+                    <option value="{{ option }}" {% if form_values.online_security == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Tech Support
+                <select name="tech_support">
+                  {% for option in ["Yes", "No", "No internet service"] %}
+                    <option value="{{ option }}" {% if form_values.tech_support == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Payment Method
+                <select name="payment_method">
+                  {% for option in ["Electronic check", "Mailed check", "Bank transfer", "Credit card"] %}
+                    <option value="{{ option }}" {% if form_values.payment_method == option %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>
+                Support Calls
+                <input name="support_calls" type="number" min="0" max="25" value="{{ form_values.support_calls }}">
+              </label>
+
+              <label>
+                Late Payments
+                <input name="late_payments" type="number" min="0" max="25" value="{{ form_values.late_payments }}">
+              </label>
+
+              <label>
+                Monthly Charges
+                <input name="monthly_charges" type="number" min="0" step="0.01" value="{{ form_values.monthly_charges }}">
+              </label>
+
+              <label>
+                Total Charges
+                <input name="total_charges" type="number" min="0" step="0.01" value="{{ form_values.total_charges }}">
+              </label>
+            </div>
+
+            <button class="score-button" type="submit">Score Customer</button>
+          </div>
+
+          <aside class="panel result-panel">
+            {% if error %}
+              <div class="empty-state warning">
+                <h2>Model Missing</h2>
+                <p>{{ error }}</p>
+              </div>
+            {% elif result %}
+              <div class="risk-card {% if result.will_churn %}risk-hot{% else %}risk-cool{% endif %}">
+                <p class="eyebrow">{{ result.band }}</p>
+                <h2>{{ result.label }}</h2>
+                <div class="score">{{ result.probability_percent }}%</div>
+                <div class="meter" aria-label="Churn probability">
+                  <span style="width: {{ result.probability_percent }}%"></span>
+                </div>
+                <p class="threshold">Decision threshold: {{ result.threshold_percent }}%</p>
+              </div>
+
+              <div class="recommendations">
+                <h3>Retention Moves</h3>
+                <ul>
+                  {% for item in result.recommendations %}
+                    <li>{{ item }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% else %}
+              <div class="empty-state">
+                <h2>Ready to score</h2>
+                <p>Enter a customer profile and run the churn model.</p>
+              </div>
+            {% endif %}
+          </aside>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
