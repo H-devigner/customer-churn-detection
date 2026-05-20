@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.matplotlib-cache/
+
+# Keep generated reports by default because they are part of the project demo.
+models/*.joblib
+data/raw/*.zip
+data/processed/*.csv
